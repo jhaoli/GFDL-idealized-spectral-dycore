@@ -1,0 +1,29 @@
+set platform = taiyuan.intel
+set template = /public/home/wab/lijh/GFDL/full_dynamics/../bin/mkmf.template.taiyuan.intel
+set mkmf = /public/home/wab/lijh/GFDL/full_dynamics/../bin/mkmf
+set sourcedir = /public/home/wab/lijh/GFDL/full_dynamics/../src
+set pathnames = /public/home/wab/lijh/GFDL/full_dynamics/path_names
+set ppdir = /public/home/wab/lijh/GFDL/full_dynamics/../postprocessing
+set execdir = /public/home/wab/lijh/GFDL/full_dynamics/exec.taiyuan.intel
+set executable = /public/home/wab/lijh/GFDL/full_dynamics/exec.taiyuan.intel/full_dynamics.x
+if ( ! -d /public/home/wab/lijh/GFDL/full_dynamics/exec.taiyuan.intel ) mkdir -p /public/home/wab/lijh/GFDL/full_dynamics/exec.taiyuan.intel
+cd /public/home/wab/lijh/GFDL/full_dynamics/exec.taiyuan.intel
+set cppDefs = -Duse_libMPI -Duse_netCDF -Duse_LARGEFILE -DINTERNAL_FILE_NML -DOVERLOAD_C8
+/public/home/wab/lijh/GFDL/full_dynamics/../bin/mkmf -a /public/home/wab/lijh/GFDL/full_dynamics/../src -t /public/home/wab/lijh/GFDL/full_dynamics/../bin/mkmf.template.taiyuan.intel -p full_dynamics.x -c -Duse_libMPI -Duse_netCDF -Duse_LARGEFILE -DINTERNAL_FILE_NML -DOVERLOAD_C8 /public/home/wab/lijh/GFDL/full_dynamics/path_names /public/home/wab/lijh/GFDL/full_dynamics/../src/shared/include /public/home/wab/lijh/GFDL/full_dynamics/../src/shared/mpp/include
+....................................................................................... Makefile is ready.
+if ( 0 != 0 ) then
+make full_dynamics.x
+ifort  -Duse_libMPI -Duse_netCDF -Duse_LARGEFILE -DINTERNAL_FILE_NML -DOVERLOAD_C8  -fpp -Wp,-w  -fno-alias -stack_temps -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -g -O2 -fltconsistency  -c -I/public/home/wab/lijh/GFDL/full_dynamics/../src/shared/include -I/public/home/wab/lijh/GFDL/full_dynamics/../src/shared/mpp/include	/public/home/wab/lijh/GFDL/full_dynamics/../src/shared/mpp/mpp_data.F90
+icc -Duse_libMPI -Duse_netCDF -Duse_LARGEFILE -DINTERNAL_FILE_NML -DOVERLOAD_C8  -D__IFC /usr/include/mpich-x86_64     -c	/public/home/wab/lijh/GFDL/full_dynamics/../src/shared/mpp/threadloc.c
+mpp_data.F90(41): #error: can't find include file: mpif.h
+make: *** [mpp_data.o] Error 1
+make: *** Waiting for unfinished jobs....
+/public/home/wab/lijh/GFDL/full_dynamics/../src/shared/mpp/threadloc.c(24): catastrophic error: cannot open source file "mpi.h"
+  #include <mpi.h>
+                  ^
+
+compilation aborted for /public/home/wab/lijh/GFDL/full_dynamics/../src/shared/mpp/threadloc.c (code 4)
+make: *** [threadloc.o] Error 4
+if ( 2 != 0 ) then
+unset echo
+ERROR: make failed for full_dynamics
