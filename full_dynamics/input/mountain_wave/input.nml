@@ -1,0 +1,81 @@
+ &diag_manager_nml
+    mix_snapshot_average_fields=.false.,
+    debug_diag_manager=.false.
+/
+
+ &fms_io_nml
+    threading_write = 'single',
+    fileset_write = 'single'
+/
+
+ &fms_nml
+         print_memory_usage=.false.,
+         domains_stack_size = 400000
+/
+
+ &hs_forcing_nml
+         no_forcing = .true.,
+/
+
+ &main_nml
+         days     = 30,
+         dt_atmos = 1200
+/
+
+ &spectral_dynamics_nml
+    damping_option          = 'resolution_dependent',
+    damping_order           = 4,
+    damping_coeff           = 1.15741e-4,
+!    damping_coeff           = 1.15741e-5,
+    do_mass_correction      =.true.,
+    do_energy_correction    =.true.,
+    do_water_correction     =.false.,
+    use_virtual_temperature =.false.,
+    vert_advect_uv          = 'second_centered',
+    vert_advect_t           = 'second_centered',
+    longitude_origin        = 0.,
+    robert_coeff            = .04,
+    alpha_implicit          = .5,
+    reference_sea_level_press=1.e5,
+    lon_max                 = 128,
+    lat_max                 = 64,
+    num_levels              = 26,
+    num_fourier             = 42,
+    num_spherical           = 43,
+    fourier_inc             = 1,
+    triang_trunc            =.true.,
+!    vert_coord_option       = 'even_sigma',
+   vert_coord_option        = 'input',
+    initial_state_option    = 'mountain_wave',
+/
+
+ &vert_coordinate_nml
+    bk = 0.0,         0.0, 
+         0.0,         0.0,
+         0.0,         0.0,
+         0.0,         0.0,
+  0.01505309,  0.03276228,
+  0.05359622,  0.07810627,
+   0.1069411,   0.1408637,
+   0.1807720,   0.2277220,
+   0.2829562,   0.3479364,
+   0.4243822,   0.5143168,
+   0.6201202,   0.7235355,
+   0.8176768,   0.8962153,
+   0.9534761,   0.9851122,
+         1.0,
+    pk = 219.4067,   489.5209, 
+         988.2418,   1805.201,
+         2983.724,   4462.334,
+         6160.587,   7851.243,
+         7731.271,   7590.131,
+         7424.086,   7228.744,
+         6998.933,   6728.574,
+         6410.509,   6036.322,
+         5596.111,   5078.225,
+         4468.960,   3752.191,
+         2908.949,   2084.739,
+         1334.443,    708.499,
+          252.136,        0.0,
+              0.0,
+/

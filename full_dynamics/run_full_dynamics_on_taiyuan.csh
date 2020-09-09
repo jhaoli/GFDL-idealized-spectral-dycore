@@ -2,12 +2,14 @@
 #Minimal runscript
 set echo 
 #--------------------------------------------------------------------------------------------------------
-set experiment = t42_jablonowski_2006
+set experiment = mountain_wave
 # The available experiments are:
 # HSt42
 # t42_polvani_2004
 # t42_polvani_2007_LC1
 # t42_jablonowski_2006
+# rossby_haurwitz_wave
+# mountain_wave
 #--------------------------------------------------------------------------------------------------------
 # define variables
 set platform  = taiyuan.intel                            # A unique identifier for your platform
@@ -51,7 +53,7 @@ cp $namelist   input.nml
 cp $diagtable  diag_table
 cp $fieldtable field_table
 cp $model_executable .
-touch data_table # Is this still necessary?
+#touch data_table # Is this still necessary?
 if ( $experiment == t42_polvani_2004 ) then
   cp $namelist:h/lmp_gqntc_t42l20_ess_pert.nc INPUT
 endif

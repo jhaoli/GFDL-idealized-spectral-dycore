@@ -133,7 +133,12 @@ call compute_vert_coord(vert_coord_option, scale_heights, surf_res, exponent, p_
 
 call press_and_geopot_init(pk, bk, .false., vert_difference_option)
 call pressure_variables(p_half, ln_p_half, p_full, ln_p_full, sea_level_press)
-sigma = p_full/sea_level_press
+! sigma = p_full/sea_level_press
+!! change to hybrid coordinate
+do k = 1, size(ug,3)
+  sigma(k) = ((pk(k) + pk(k+1)) / sea_level_press + bk(k) + bk(k+1)) * 0.5
+end do 
+!!
 nv = (sigma - n0)*halfpi
 
 num_lon    = size(ug,1)
@@ -196,23 +201,23 @@ do j=1,num_lat
   enddo
 enddo
 
-id_phalf = diag_axis_init('phalf',.01*p_half,'hPa','z','approx half pressure level',direction=-1)
-id_pfull = diag_axis_init('pfull',.01*p_full,'hPa','z','approx full pressure level',direction=-1,edges=id_phalf)
-id_lon   = diag_axis_init('lon',deg_lon,'degrees E','x','longitude')
-id_lat   = diag_axis_init('lat',deg_lat,'degrees N','y','latitude')
-id_basic_flow   = register_static_field('jablonowski_2006', 'basic_flow',  (/id_lat,id_pfull/),'initial zonal wind', 'm/sec')
-id_basic_temp   = register_static_field('jablonowski_2006', 'basic_temp',  (/id_lat,id_pfull/),'initial basic_temp', 'K')
-id_pot_temp     = register_static_field('jablonowski_2006', 'pot_temp',    (/id_lat,id_pfull/),'initial potential temp', 'K')
-id_perturbation = register_static_field('jablonowski_2006', 'perturbation',(/id_lon,id_lat/),  'initial perturbation','m/sec')
-if(id_basic_flow > 0) used = send_data(id_basic_flow, basic_flow)
-do k=1,num_levels
-  do j=1,num_lat
-    pot_temp(j,k) = basic_temp(j,k)*(P00/p_full(k))**KAPPA
-  enddo
-enddo
-if(id_basic_temp > 0) used = send_data(id_basic_temp, basic_temp)
-if(id_pot_temp   > 0) used = send_data(id_pot_temp,     pot_temp)
-if(id_perturbation>0) used = send_data(id_perturbation, perturbation)
+!id_phalf = diag_axis_init('phalf',.01*p_half,'hPa','z','approx half pressure level',direction=-1)
+!id_pfull = diag_axis_init('pfull',.01*p_full,'hPa','z','approx full pressure level',direction=-1,edges=id_phalf)
+!id_lon   = diag_axis_init('lon',deg_lon,'degrees E','x','longitude')
+!id_lat   = diag_axis_init('lat',deg_lat,'degrees N','y','latitude')
+!id_basic_flow   = register_static_field('jablonowski_2006', 'basic_flow',  (/id_lat,id_pfull/),'initial zonal wind', 'm/sec')
+!id_basic_temp   = register_static_field('jablonowski_2006', 'basic_temp',  (/id_lat,id_pfull/),'initial basic_temp', 'K')
+!id_pot_temp     = register_static_field('jablonowski_2006', 'pot_temp',    (/id_lat,id_pfull/),'initial potential temp', 'K')
+!id_perturbation = register_static_field('jablonowski_2006', 'perturbation',(/id_lon,id_lat/),  'initial perturbation','m/sec')
+!if(id_basic_flow > 0) used = send_data(id_basic_flow, basic_flow)
+!do k=1,num_levels
+!  do j=1,num_lat
+!    pot_temp(j,k) = basic_temp(j,k)*(P00/p_full(k))**KAPPA
+!  enddo
+!enddo
+!if(id_basic_temp > 0) used = send_data(id_basic_temp, basic_temp)
+!if(id_pot_temp   > 0) used = send_data(id_pot_temp,     pot_temp)
+!if(id_perturbation>0) used = send_data(id_perturbation, perturbation)
 
 do k=1,num_levels
   do j=1,num_lat

@@ -1,0 +1,86 @@
+set experiment = williamson92
+set platform = taiyuan.intel
+set npes = 8
+set num_executions = 1
+set time_stamp = /public/home/wab/lijh/GFDL/shallow/../bin/time_stamp.csh
+set model_executable = /public/home/wab/lijh/GFDL/shallow/exec.taiyuan.intel/shallow.x
+set mpiexec = /public/home/wab/lijh/GFDL/shallow/../bin/mpiexec.hydra
+set mppnccombine = /public/home/wab/lijh/GFDL/shallow/../postprocessing/mppnccombine.x
+set workdir = /public/home/wab/lijh/GFDL/test/williamson92
+set namelist = /public/home/wab/lijh/GFDL/shallow/input/williamson92/input.nml
+set diagtable = /public/home/wab/lijh/GFDL/shallow/input/williamson92/diag_table
+if ( -d /public/home/wab/lijh/GFDL/test/williamson92 ) then
+/bin/rm -rf /public/home/wab/lijh/GFDL/test/williamson92/00000000.logfile.000000.out /public/home/wab/lijh/GFDL/test/williamson92/00000000.shallow.nc /public/home/wab/lijh/GFDL/test/williamson92/00000000.time_stamp.out /public/home/wab/lijh/GFDL/test/williamson92/diag_table /public/home/wab/lijh/GFDL/test/williamson92/INPUT /public/home/wab/lijh/GFDL/test/williamson92/input.nml /public/home/wab/lijh/GFDL/test/williamson92/RESTART /public/home/wab/lijh/GFDL/test/williamson92/shallow.x
+else
+cd /public/home/wab/lijh/GFDL/test/williamson92
+mkdir INPUT RESTART
+cp /public/home/wab/lijh/GFDL/shallow/input/williamson92/input.nml input.nml
+cp /public/home/wab/lijh/GFDL/shallow/input/williamson92/diag_table diag_table
+cp /public/home/wab/lijh/GFDL/shallow/exec.taiyuan.intel/shallow.x .
+set irun = 1
+while ( 1 < = 1 )
+/public/home/wab/lijh/GFDL/shallow/../bin/mpiexec.hydra -np 8 ./shallow.x
+NOTE from PE    0: MPP_DOMAINS_SET_STACK_SIZE: stack size set to    32768.
+ &MPP_IO_NML
+ HEADER_BUFFER_VAL       =       16384,
+ GLOBAL_FIELD_ON_ROOT_PE = T,
+ IO_CLOCKS_ON    = F,
+ SHUFFLE =           0,
+ DEFLATE_LEVEL   =          -1
+ /
+NOTE from PE    0: MPP_IO_SET_STACK_SIZE: stack size set to     131072.
+NOTE from PE    0: MPP_DOMAINS_SET_STACK_SIZE: stack size set to   200000.
+NOTE from PE    0: tracer_manager_init : No tracers are available to be registered.
+NOTE from PE    0: tracer_manager_init : No tracers are available to be registered.
+NOTE from PE    0: tracer_manager_init : No tracers are available to be registered.
+NOTE from PE    0: tracer_manager_init : No tracers are available to be registered.
+NOTE from PE    0: tracer_manager_init : No tracers are available to be registered.
+
+WARNING from PE    0: diag_manager_mod::diag_manager_init: DIAG_MANAGER_NML not found in input.nml.  Using defaults.
+
+
+WARNING from PE    0: diag_manager_mod::diag_manager_init: DIAG_MANAGER_NML not found in input.nml.  Using defaults.
+
+  starting            1  OpenMP threads per MPI-task
+ATMOS MODEL DOMAIN DECOMPOSITION
+  X-AXIS =  256
+  Y-AXIS =   16  16  16  16  16  16  16  16
+ day =     1  second =     0  enstrophy =  0.953826E-62   div_squared =  0.211363E-51   max_Froude =  0.289E-43
+ day =     2  second =     0  enstrophy =  0.953826E-62   div_squared =  0.211363E-51   max_Froude =  0.289E-43
+ day =     3  second =     0  enstrophy =  0.953826E-62   div_squared =  0.211363E-51   max_Froude =  0.289E-43
+ day =     4  second =     0  enstrophy =  0.953826E-62   div_squared =  0.211363E-51   max_Froude =  0.289E-43
+ day =     5  second =     0  enstrophy =  0.953826E-62   div_squared =  0.211363E-51   max_Froude =  0.289E-43
+ MPP_DOMAINS_STACK high water mark=        8192
+
+Tabulating mpp_clock statistics across      8 PEs...
+
+                                          tmin          tmax          tavg          tstd  tfrac grain pemin pemax
+Total runtime                         4.353941      4.353963      4.353956      0.000007  1.000     0     0     7
+ MPP_STACK high water mark=           0
+if ( 0 != 0 ) then
+set date_name = `$time_stamp -bf digital`
+/public/home/wab/lijh/GFDL/shallow/../bin/time_stamp.csh -bf digital
+foreach outfile ( *.out )
+mv logfile.000000.out 00000000.logfile.000000.out
+end
+mv time_stamp.out 00000000.time_stamp.out
+end
+if ( 8 > 1 ) then
+foreach ncfile ( `/bin/ls *.nc.0000` )
+/bin/ls shallow.nc.0000
+/public/home/wab/lijh/GFDL/shallow/../postprocessing/mppnccombine.x shallow.nc
+if ( 0 == 0 ) then
+rm -f shallow.nc.0000 shallow.nc.0001 shallow.nc.0002 shallow.nc.0003 shallow.nc.0004 shallow.nc.0005 shallow.nc.0006 shallow.nc.0007
+mv shallow.nc 00000000.shallow.nc
+else
+end
+else
+cd /public/home/wab/lijh/GFDL/test/williamson92
+/bin/rm: No match.
+mv RESTART/atmos_model.res RESTART/shallow_dynamics.res.nc INPUT
+@ irun ++
+end
+while ( 2 < = 1 )
+echo NOTE: williamson92 completed successfully
+NOTE: williamson92 completed successfully
+exit 0

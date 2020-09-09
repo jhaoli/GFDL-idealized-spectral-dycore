@@ -1,0 +1,18 @@
+mountain_wave
+0 0 0 0 0 0
+#output files
+#file_name, output_freq, output_units, format, time_units, long_name
+"atmos_instant", 1, "days", 1, "days", "time",
+#diagnostic field entries.
+#module_name, field_name, output_name, file_name, time_sampling, time_avg, other_opts, precision
+ "dynamics",        "ps",            "ps",            "atmos_instant",     "all",  .false.,  "none", 2,
+ "dynamics",        "bk",            "bk",            "atmos_instant",     "all",  .false.,  "none", 2,
+ "dynamics",        "pk",            "pk",            "atmos_instant",     "all",  .false.,  "none", 2,
+ "dynamics",        "zsurf",         "zsurf",         "atmos_instant",     "all",  .false.,  "none", 2,
+ "dynamics",        "ucomp",         "ucomp",         "atmos_instant",     "all",  .false.,  "none", 2,
+ "dynamics",        "vcomp",         "vcomp",         "atmos_instant",     "all",  .false.,  "none", 2,
+ "dynamics",        "temp",          "temp",          "atmos_instant",     "all",  .false.,  "none", 2,
+ "dynamics",        "omega",         "omega",         "atmos_instant",     "all",  .false.,  "none", 2,
+ "dynamics",        "div",           "div",           "atmos_instant",     "all",  .false.,  "none", 2,
+ "dynamics",        "vor",           "vor",           "atmos_instant",     "all",  .false.,  "none", 2,
+ "dynamics",        "height",         "h",            "atmos_instant",     "all",  .false.,  "none", 2,

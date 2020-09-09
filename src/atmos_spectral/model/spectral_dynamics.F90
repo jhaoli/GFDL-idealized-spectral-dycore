@@ -80,10 +80,11 @@ use every_step_diagnostics_mod, only: every_step_diagnostics_init, every_step_di
 
 use        mpp_domains_mod, only: mpp_global_field
 
-use       polvani_2004_mod, only: polvani_2004
-use       polvani_2007_mod, only: polvani_2007, polvani_2007_tracer_init, get_polvani_2007_tracers
-use   jablonowski_2006_mod, only: jablonowski_2006
-
+use          polvani_2004_mod, only: polvani_2004
+use          polvani_2007_mod, only: polvani_2007, polvani_2007_tracer_init, get_polvani_2007_tracers
+use      jablonowski_2006_mod, only: jablonowski_2006
+use  rossby_haurwitz_wave_mod, only: rossby_haurwitz_wave
+use         mountain_wave_mod, only: mountain_wave
 !===============================================================================================
 implicit none
 private
@@ -192,7 +193,7 @@ real    :: damping_coeff       = 1.15740741e-4, & ! (one tenth day)**-1
      reference_sea_level_press =  101325.
 !===============================================================================================
 
-real, dimension(2) :: valid_range_t = (/100.,500./)
+real, dimension(2) :: valid_range_t = (/80.,500./)
 
 namelist /spectral_dynamics_nml/ use_virtual_temperature, damping_option,                            &
                                  damping_order, damping_coeff, damping_order_vor, damping_coeff_vor, &
@@ -592,6 +593,16 @@ else
     call jablonowski_2006(reference_sea_level_press, triang_trunc, vert_coord_option, vert_difference_option, &
                  scale_heights, surf_res, p_press, p_sigma, exponent, pk, bk, &
                  vors(:,:,:,1), divs(:,:,:,1), ts(:,:,:,1), ln_ps(:,:,1), ug(:,:,:,1),  vg(:,:,:,1), &
+                 tg(:,:,:,1), psg(:,:,1), vorg, divg, surf_geopotential)
+  else if(initial_state_option == 'rossby_haurwitz_wave') then
+    call rossby_haurwitz_wave(reference_sea_level_press, triang_trunc, vert_coord_option, vert_difference_option, &
+                 scale_heights, surf_res, p_press, p_sigma, exponent, pk, bk, &
+                 vors(:,:,:,1), divs(:,:,:,1), ts(:,:,:,1), ln_ps(:,:,1), ug(:,:,:,1),  vg(:,:,:,1), &
+                 tg(:,:,:,1), psg(:,:,1), vorg, divg, surf_geopotential)
+  else if(initial_state_option == 'mountain_wave') then
+    call mountain_wave(reference_sea_level_press, triang_trunc, vert_coord_option, vert_difference_option, &
+                 scale_heights, surf_res, p_press, p_sigma, exponent, pk, bk, &
+                 vors(:,:,:,1), divs(:,:,:,1), ts(:,:,:,1), ln_ps(:,:,1), ug(:,:,:,1), vg(:,:,:,1), &
                  tg(:,:,:,1), psg(:,:,1), vorg, divg, surf_geopotential)
   else
     call error_mesg('spectral_dynamics_init', trim(initial_state_option)//' is not a valid value of initial_state_option', FATAL)

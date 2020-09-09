@@ -158,5 +158,7 @@ atmos_spectral/init/spectral_init_cond.F90
 atmos_spectral/init/spectral_initialize_fields.F90
 atmos_spectral/init/topog_regularization.F90
 atmos_spectral/init/vert_coordinate.F90
+atmos_spectral/init/rossby_haurwitz_wave.F90
+atmos_spectral/init/mountain_wave.F90
 atmos_shared/vert_advection/vert_advection.F90
 atmos_shared/interpolator/interpolator.F90

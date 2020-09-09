@@ -72,57 +72,49 @@ character(len=128), parameter :: tag = &
 ! there is no calendar associated with model of this type
 ! therefore, year=0, month=0 are assumed
 
-   type (time_type) :: Time, Time_init, Time_end, Time_step_atmos
-   integer :: num_atmos_calls, na
+  type (time_type) :: Time, Time_init, Time_end, Time_step_atmos
+  integer :: num_atmos_calls, na
 
 ! ----- model initial date -----
 
-   integer :: date_init(6) ! note: year=month=0
+  integer :: date_init(6) ! note: year=month=0
 
 ! ----- timing flags -----
 
-   integer :: id_init, id_loop, id_end
-   integer, parameter :: timing_level = 1
+  integer :: id_init, id_loop, id_end
+  integer, parameter :: timing_level = 1
 
 !-----------------------------------------------------------------------
-   character(len=80) :: text
+  character(len=80) :: text
 !-----------------------------------------------------------------------
-   type(domain2d), save :: atmos_domain  ! This variable must be treated as read-only
+  type(domain2d), save :: atmos_domain  ! This variable must be treated as read-only
 !-----------------------------------------------------------------------
 
-      integer, dimension(4) :: current_time = (/ 0, 0, 0, 0 /)
-      integer :: days=0, hours=0, minutes=0, seconds=0
-      integer :: dt_atmos = 0
-      integer :: memuse_interval = 72
-      integer :: atmos_nthreads = 1
+  integer, dimension(4) :: current_time = (/ 0, 0, 0, 0 /)
+  integer :: days=0, hours=0, minutes=0, seconds=0
+  integer :: dt_atmos = 0
+  integer :: memuse_interval = 72
+  integer :: atmos_nthreads = 1
 
-      namelist /main_nml/ current_time, dt_atmos,  &
-                          days, hours, minutes, seconds, memuse_interval, atmos_nthreads
+  namelist /main_nml/ current_time, dt_atmos,  &
+                      days, hours, minutes, seconds, memuse_interval, atmos_nthreads
 
 !#######################################################################
 
- call fms_init ( )
- call atmos_model_init 
+  call fms_init()
+  call atmos_model_init 
 
 !   ------ atmosphere integration loop -------
-
-    call mpp_clock_begin (id_loop)
-
+  call mpp_clock_begin (id_loop)
     do na = 1, num_atmos_calls
-
        call atmosphere (Time)
-
        Time = Time + Time_step_atmos
-
        if(modulo(na,memuse_interval) == 0) then
          write( text,'(a,i4)' )'Main loop at timestep=',na
          call print_memuse_stats(text)
        endif
-
     enddo
-
-    call mpp_clock_end (id_loop)
-
+  call mpp_clock_end (id_loop)
 !   ------ end of atmospheric time step loop -----
 
  call atmos_model_end
@@ -133,9 +125,8 @@ contains
 
 !#######################################################################
 
-   subroutine atmos_model_init
+  subroutine atmos_model_init
 
-!-----------------------------------------------------------------------
     integer :: unit, ierr, io, logunit
     integer :: ntrace, ntprog, ntdiag, ntfamily
     integer :: date(6)
@@ -145,74 +136,70 @@ contains
 !-----------------------------------------------------------------------
 !----- initialization timing identifiers ----
 
- id_init = mpp_clock_id ('MAIN: initialization', grain=CLOCK_COMPONENT)
- id_loop = mpp_clock_id ('MAIN: time loop'     , grain=CLOCK_COMPONENT)
- id_end  = mpp_clock_id ('MAIN: termination'   , grain=CLOCK_COMPONENT)
+    id_init = mpp_clock_id ('MAIN: initialization', grain=CLOCK_COMPONENT)
+    id_loop = mpp_clock_id ('MAIN: time loop'     , grain=CLOCK_COMPONENT)
+    id_end  = mpp_clock_id ('MAIN: termination'   , grain=CLOCK_COMPONENT)
+   
+    logunit = stdlog()
 
- logunit = stdlog()
-
- call mpp_clock_begin (id_init)
+    call mpp_clock_begin (id_init)
 
 !-------------------------------------------
 ! how many tracers have been registered?
 !  (will print number below)
-   call register_tracers ( MODEL_ATMOS, ntrace, ntprog, ntdiag, ntfamily )
-
+  call register_tracers ( MODEL_ATMOS, ntrace, ntprog, ntdiag, ntfamily )
 
 !----- read namelist -------
-
 #ifdef INTERNAL_FILE_NML
-     read (input_nml_file, nml=main_nml, iostat=io)
-     ierr = check_nml_error(io, 'main_nml')
+  read (input_nml_file, nml=main_nml, iostat=io)
+  ierr = check_nml_error(io, 'main_nml')
 #else
-   unit = open_namelist_file ( )
-   ierr=1; do while (ierr /= 0)
+  unit = open_namelist_file ( )
+  ierr=1; 
+  do while (ierr /= 0)
           read  (unit, nml=main_nml, iostat=io, end=10)
           ierr = check_nml_error (io, 'main_nml')
-   enddo
+  enddo
 10 call mpp_close (unit)
 #endif
 
 !----- write namelist to logfile -----
+  call write_version_number (version,tag)
+  if ( mpp_pe() == mpp_root_pe() ) write (logunit, nml=main_nml)
 
-   call write_version_number (version,tag)
-   if ( mpp_pe() == mpp_root_pe() ) write (logunit, nml=main_nml)
-
-   if (dt_atmos == 0) then
-     call error_mesg ('program atmos_model', 'dt_atmos has not been specified', FATAL)
-   endif
-
+  if (dt_atmos == 0) then
+    call error_mesg ('program atmos_model', 'dt_atmos has not been specified', FATAL)
+  endif
 !----- read restart file -----
-
-   if (file_exist('INPUT/atmos_model.res')) then
-       call mpp_open (unit, 'INPUT/atmos_model.res', action=MPP_RDONLY, nohdrs=.true.)
-       read  (unit,*) date
-       call mpp_close (unit)
-   else
+  if (file_exist('INPUT/atmos_model.res')) then
+    call mpp_open (unit, 'INPUT/atmos_model.res', action=MPP_RDONLY, nohdrs=.true.)
+    read  (unit,*) date
+    call mpp_close (unit)
+  else
     ! use namelist time if restart file does not exist
-      date(1:2) = 0
-      date(3:6) = current_time
-   endif
+    date(1:2) = 0
+    date(3:6) = current_time
+  endif
 
 !----- write current/initial date actually used to logfile file -----
 
-    if ( mpp_pe() == mpp_root_pe() ) then
-      write (logunit,16) date(3:6)
-    endif
+  if ( mpp_pe() == mpp_root_pe() ) then
+    write (logunit,16) date(3:6)
+  endif
 
  16 format ('  current time used = day',i5,' hour',i3,2(':',i2.2)) 
 
 !  print number of tracers to logfile
-   if (mpp_pe() == mpp_root_pe()) then
-        write (logunit, '(a,i3)') 'Number of tracers =', ntrace
-        write (logunit, '(a,i3)') 'Number of prognostic tracers =', ntprog
-        write (logunit, '(a,i3)') 'Number of diagnostic tracers =', ntdiag
-   endif
+  if (mpp_pe() == mpp_root_pe()) then
+    write (logunit, '(a,i3)') 'Number of tracers =', ntrace
+    write (logunit, '(a,i3)') 'Number of prognostic tracers =', ntprog
+    write (logunit, '(a,i3)') 'Number of diagnostic tracers =', ntdiag
+  endif
 
 !-----------------------------------------------------------------------
 !------ initialize diagnostics manager ------
 
-    call diag_manager_init
+  call diag_manager_init
 
 !----- always override initial/base date with diag_manager value -----
 
@@ -220,8 +207,8 @@ contains
 !      this base date is typically the starting date for the
 !      experiment and is subtracted from the current date
 
-    call get_base_date ( date_init(1), date_init(2), date_init(3), &
-                         date_init(4), date_init(5), date_init(6)  )
+  call get_base_date(date_init(1), date_init(2), date_init(3), &
+                     date_init(4), date_init(5), date_init(6)  )
 
   ! make sure base date does not have a year or month specified
     if ( date_init(1)+date_init(2) /= 0 ) then
@@ -312,10 +299,9 @@ contains
 !  ---- terminate timing ----
    call mpp_clock_end (id_init)
 
-!-----------------------------------------------------------------------
-
    call print_memuse_stats('atmos_model_init')
-   end subroutine atmos_model_init
+
+  end subroutine atmos_model_init
 
 !#######################################################################
 

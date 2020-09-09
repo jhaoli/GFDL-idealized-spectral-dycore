@@ -7,5 +7,4 @@
 #SBATCH --error=%j.stderr
 #SBATCH -t 7-0:00
 
-mpiexec -np 2
-
+./run_full_dynamics_on_taiyuan_rh4.csh

@@ -56,8 +56,9 @@ use    time_manager_mod,  only : time_type,      &
 
 use shallow_dynamics_mod,  only : shallow_dynamics_init,    &
                                   shallow_dynamics,         &
-                                  shallow_dynamics_end,     &
-                                  dynamics_type
+                                  shallow_dynamics_end
+                                  
+use shallow_dynamics_type_mod, only: dynamics_type
     
 use shallow_physics_mod, only : shallow_physics_init, &
                                 shallow_physics,      &
@@ -162,7 +163,7 @@ num_lat = Dyn%num_lat
 nlon = ie+1-is  ! size of grid on each processor
 nlat = je+1-js
 
-call shallow_physics_init(Phys)
+! call shallow_physics_init(Phys)
 call shallow_diagnostics_init(Time, num_lon, num_lat)
 
 if(Time == Time_init) then
@@ -184,7 +185,6 @@ subroutine atmosphere(Time)
 
 type (time_type), intent(in) :: Time
 integer :: day, second, dt
-
 
 if(.not.module_is_initialized) then
   call error_mesg('atmosphere', &
@@ -208,11 +208,11 @@ else
   future = previous
 endif
 
-call shallow_physics(Time,                                 &
-                     Dyn%Tend%u, Dyn%Tend%v, Dyn%Tend%h,   &
-                     Dyn%Grid%u, Dyn%Grid%v, Dyn%Grid%h,   &
-                     delta_t, previous, current,           &
-                     Phys)
+! call shallow_physics(Time,                                 &
+!                      Dyn%Tend%u, Dyn%Tend%v, Dyn%Tend%h,   &
+!                      Dyn%Grid%u, Dyn%Grid%v, Dyn%Grid%h,   &
+!                      delta_t, previous, current,           &
+!                      Phys)
 
 call shallow_dynamics(Time, Time_init, &
                       Dyn, previous, current, future, delta_t) 
@@ -267,7 +267,7 @@ if(.not.module_is_initialized) then
                   'atmosphere_init has not been called.', FATAL)
 end if
 
-call shallow_physics_end (Phys)
+! call shallow_physics_end (Phys)
 call shallow_dynamics_end (Dyn, previous, current)
 
 module_is_initialized = .false.

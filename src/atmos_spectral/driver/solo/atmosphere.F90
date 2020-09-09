@@ -219,7 +219,6 @@ enddo
 call hs_forcing_init(get_axis_id(), Time, rad_lonb_2d, rad_latb_2d)
 
 module_is_initialized = .true.
-
 return
 end subroutine atmosphere_init
 
@@ -276,7 +275,6 @@ else
   call compute_pressures_and_heights(tg(:,:,:,future), psg(:,:,future), surf_geopotential, z_full, z_half, p_full, p_half, &
                                      grid_tracers(:,:,:,future,nhum))
 endif
-
 call spectral_diagnostics(Time_next, psg(:,:,future), ug(:,:,:,future), vg(:,:,:,future), &
                           tg(:,:,:,future), wg_full, grid_tracers(:,:,:,:,:), future)
 

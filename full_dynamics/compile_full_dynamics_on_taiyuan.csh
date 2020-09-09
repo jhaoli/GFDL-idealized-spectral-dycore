@@ -39,7 +39,8 @@ cd $execdir
 #--------------------------------------------------------------------------------------------------------
 
 # execute mkmf to create makefile
-set cppDefs = "-Duse_libMPI -Duse_netCDF -Duse_LARGEFILE -DINTERNAL_FILE_NML -DOVERLOAD_C8"
+#set cppDefs = "-Duse_libMPI -Duse_netCDF -Duse_LARGEFILE -DINTERNAL_FILE_NML -DOVERLOAD_C8"
+set cppDefs = "-Duse_libMPI -Duse_netCDF -Duse_LARGEFILE -DOVERLOAD_C8"
 $mkmf -a $sourcedir -t $template -p $executable:t -c "$cppDefs" $pathnames $sourcedir/shared/include $sourcedir/shared/mpp/include
 if ( $status != 0 ) then
    unset echo
