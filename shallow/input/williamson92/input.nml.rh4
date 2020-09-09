@@ -13,8 +13,8 @@
 /
 
  &main_nml
-   days     = 5,
-   dt_atmos = 120
+   days     = 30,
+   dt_atmos = 60
 /
 
  &shallow_dynamics_nml
@@ -29,11 +29,10 @@
    damping_option      = 'resolution_dependent',
    damping_order       = 4,
 !   damping_coeff      = 5.e12,
-   damping_coeff       = 1.25e1,
-   h_0                 = 3.e04,
+   damping_coeff       = 1.25e-2,
    grid_tracer         = .false.,
    spec_tracer         = .false.,
-   robert_coeff        = 0.04
+   robert_coeff        = 0.06
    robert_coeff_tracer = 0.04,
 /
 

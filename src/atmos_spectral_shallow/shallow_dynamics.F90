@@ -112,7 +112,7 @@ module shallow_dynamics_mod
                             longitude_origin, damping_option,  &
                             damping_order,     damping_coeff,  &
                             robert_coeff, robert_coeff_tracer, &
-                            h_0, spec_tracer, grid_tracer,     &
+                            spec_tracer, grid_tracer,          &
                             valid_range_v, test_case
 contains
   subroutine shallow_dynamics_init (Dyn,  Time, Time_init)
