@@ -18,7 +18,7 @@
 /
 
  &main_nml
-         days     = 90,
+         days     = 100,
          dt_atmos = 1200
 /
 

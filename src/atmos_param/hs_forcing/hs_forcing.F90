@@ -120,125 +120,115 @@ contains
 
 !#######################################################################
 
- subroutine hs_forcing ( is, ie, js, je, dt, Time, lon, lat, p_half, p_full, &
+  subroutine hs_forcing ( is, ie, js, je, dt, Time, lon, lat, p_half, p_full, &
                          u, v, t, r, um, vm, tm, rm, udt, vdt, tdt, rdt,&
                          mask, kbot )
-
 !-----------------------------------------------------------------------
-   integer, intent(in)                        :: is, ie, js, je
-      real, intent(in)                        :: dt
- type(time_type), intent(in)                  :: Time
-      real, intent(in),    dimension(:,:)     :: lon, lat
-      real, intent(in),    dimension(:,:,:)   :: p_half, p_full
-      real, intent(in),    dimension(:,:,:)   :: u, v, t, um, vm, tm
-      real, intent(in),    dimension(:,:,:,:) :: r, rm
-      real, intent(inout), dimension(:,:,:)   :: udt, vdt, tdt
-      real, intent(inout), dimension(:,:,:,:) :: rdt
-
-      real, intent(in),    dimension(:,:,:), optional :: mask
-   integer, intent(in),    dimension(:,:)  , optional :: kbot
+    integer, intent(in)                     :: is, ie, js, je
+    real, intent(in)                        :: dt
+    type(time_type), intent(in)             :: Time
+    real, intent(in),    dimension(:,:)     :: lon, lat
+    real, intent(in),    dimension(:,:,:)   :: p_half, p_full
+    real, intent(in),    dimension(:,:,:)   :: u, v, t, um, vm, tm
+    real, intent(in),    dimension(:,:,:,:) :: r, rm
+    real, intent(inout), dimension(:,:,:)   :: udt, vdt, tdt
+    real, intent(inout), dimension(:,:,:,:) :: rdt
+    real, intent(in),    dimension(:,:,:), optional :: mask
+    integer, intent(in), dimension(:,:)  , optional :: kbot
 !-----------------------------------------------------------------------
-   real, dimension(size(t,1),size(t,2))           :: ps, diss_heat
-   real, dimension(size(t,1),size(t,2),size(t,3)) :: ttnd, utnd, vtnd, teq, pmass
-   real, dimension(size(r,1),size(r,2),size(r,3)) :: rst, rtnd
-   integer :: i, j, k, kb, n, num_tracers
-   logical :: used
-   real    :: flux, sink, value
-   character(len=128) :: scheme, params
-
+    real, dimension(size(t,1),size(t,2))           :: ps, diss_heat
+    real, dimension(size(t,1),size(t,2),size(t,3)) :: ttnd, utnd, vtnd, teq, pmass
+    real, dimension(size(r,1),size(r,2),size(r,3)) :: rst, rtnd
+    integer :: i, j, k, kb, n, num_tracers
+    logical :: used
+    real    :: flux, sink, value
+    character(len=128) :: scheme, params
 !-----------------------------------------------------------------------
-     if (no_forcing) return
+    if (no_forcing) return
 
-     if (.not.module_is_initialized) call error_mesg ('hs_forcing','hs_forcing_init has not been called', FATAL)
-
+    if (.not.module_is_initialized) call error_mesg ('hs_forcing','hs_forcing_init has not been called', FATAL)
 !-----------------------------------------------------------------------
 !     surface pressure
-
-     if (present(kbot)) then
-         do j=1,size(p_half,2)
-         do i=1,size(p_half,1)
-            kb = kbot(i,j)
-            ps(i,j) = p_half(i,j,kb+1)
-         enddo
-         enddo
-     else
-            ps(:,:) = p_half(:,:,size(p_half,3))
-     endif
-
+    if (present(kbot)) then
+      do j=1,size(p_half,2)
+        do i=1,size(p_half,1)
+          kb = kbot(i,j)
+          ps(i,j) = p_half(i,j,kb+1)
+        enddo
+      enddo
+    else
+      ps(:,:) = p_half(:,:,size(p_half,3))
+    endif
 !-----------------------------------------------------------------------
 !     rayleigh damping of wind components near the surface
 
-      call rayleigh_damping ( Time, ps, p_full, p_half, u, v, utnd, vtnd, mask=mask )
+    call rayleigh_damping ( Time, ps, p_full, p_half, u, v, utnd, vtnd, mask=mask )
 
-      if (do_conserve_energy) then
-         ttnd = -((um+.5*utnd*dt)*utnd + (vm+.5*vtnd*dt)*vtnd)/CP_AIR
-         tdt = tdt + ttnd
-         if (id_tdt_diss > 0) used = send_data ( id_tdt_diss, ttnd, Time, is, js)
+    if (do_conserve_energy) then
+      ttnd = -((um+.5*utnd*dt)*utnd + (vm+.5*vtnd*dt)*vtnd)/CP_AIR
+      tdt = tdt + ttnd
+      if (id_tdt_diss > 0) used = send_data ( id_tdt_diss, ttnd, Time, is, js)
        ! vertical integral of ke dissipation
-         if ( id_diss_heat > 0 ) then
-          do k = 1, size(t,3)
-            pmass(:,:,k) = p_half(:,:,k+1)-p_half(:,:,k)
-          enddo
-          diss_heat = CP_AIR/GRAV * sum( ttnd*pmass, 3)
-          used = send_data ( id_diss_heat, diss_heat, Time, is, js)
-         endif
+      if ( id_diss_heat > 0 ) then
+        do k = 1, size(t,3)
+          pmass(:,:,k) = p_half(:,:,k+1)-p_half(:,:,k)
+        enddo
+        diss_heat = CP_AIR/GRAV * sum( ttnd*pmass, 3)
+        used = send_data ( id_diss_heat, diss_heat, Time, is, js)
       endif
+    endif
 
-      udt = udt + utnd
-      vdt = vdt + vtnd
+    udt = udt + utnd
+    vdt = vdt + vtnd
 
-      if (id_udt > 0) used = send_data ( id_udt, utnd, Time, is, js)
-      if (id_vdt > 0) used = send_data ( id_vdt, vtnd, Time, is, js)
+    if (id_udt > 0) used = send_data ( id_udt, utnd, Time, is, js)
+    if (id_vdt > 0) used = send_data ( id_vdt, vtnd, Time, is, js)
 
 !-----------------------------------------------------------------------
 !     thermal forcing for held & suarez (1994) benchmark calculation
 
-      call newtonian_damping ( Time, lat, ps, p_full, p_half, t, ttnd, teq, mask )
+    call newtonian_damping ( Time, lat, ps, p_full, p_half, t, ttnd, teq, mask )
+    tdt = tdt + ttnd
+    if (id_newtonian_damping > 0) used = send_data(id_newtonian_damping, ttnd, Time, is, js)
+
+    if(trim(local_heating_option) /= '') then
+      call local_heating ( Time, is, js, lon, lat, ps, p_full, p_half, ttnd )
       tdt = tdt + ttnd
-      if (id_newtonian_damping > 0) used = send_data(id_newtonian_damping, ttnd, Time, is, js)
+      if (id_local_heating > 0) used = send_data ( id_local_heating, ttnd, Time, is, js)
+    endif
 
-      if(trim(local_heating_option) /= '') then
-        call local_heating ( Time, is, js, lon, lat, ps, p_full, p_half, ttnd )
-        tdt = tdt + ttnd
-        if (id_local_heating > 0) used = send_data ( id_local_heating, ttnd, Time, is, js)
-      endif
-
-      if (id_tdt > 0) used = send_data ( id_tdt, tdt, Time, is, js)
-      if (id_teq > 0) used = send_data ( id_teq, teq, Time, is, js)
+    if (id_tdt > 0) used = send_data ( id_tdt, tdt, Time, is, js)
+    if (id_teq > 0) used = send_data ( id_teq, teq, Time, is, js)
 
 !-----------------------------------------------------------------------
 !     -------- tracers -------
-
-      call get_number_tracers(MODEL_ATMOS, num_tracers=num_tracers)
-      if(num_tracers == size(rdt,4)) then
-        do n = 1, size(rdt,4)
-           flux = trflux
-           sink = trsink
-           if (query_method('tracer_sms', MODEL_ATMOS, n, scheme, params)) then
-               if (uppercase(trim(scheme)) == 'NONE') cycle
-               if (uppercase(trim(scheme)) == 'OFF') then
-                 flux = 0.; sink = 0.
-               else
-                 if (parse(params,'flux',value) == 1) flux = value
-                 if (parse(params,'sink',value) == 1) sink = value
-               endif
-           endif
-           rst = rm(:,:,:,n) + dt*rdt(:,:,:,n)
-           call tracer_source_sink ( flux, sink, p_half, rst, rtnd, kbot )
-           rdt(:,:,:,n) = rdt(:,:,:,n) + rtnd
-        enddo
-      else
-        call error_mesg('hs_forcing','size(rdt,4) not equal to num_tracers', FATAL)
-      endif
+    call get_number_tracers(MODEL_ATMOS, num_tracers=num_tracers)
+    if(num_tracers == size(rdt,4)) then
+      do n = 1, size(rdt,4)
+        flux = trflux
+        sink = trsink
+        if (query_method('tracer_sms', MODEL_ATMOS, n, scheme, params)) then
+        if (uppercase(trim(scheme)) == 'NONE') cycle
+          if (uppercase(trim(scheme)) == 'OFF') then
+             flux = 0.; sink = 0.
+          else
+             if (parse(params,'flux',value) == 1) flux = value
+             if (parse(params,'sink',value) == 1) sink = value
+          endif
+        endif
+        rst = rm(:,:,:,n) + dt*rdt(:,:,:,n)
+        call tracer_source_sink ( flux, sink, p_half, rst, rtnd, kbot )
+        rdt(:,:,:,n) = rdt(:,:,:,n) + rtnd
+      enddo
+    else
+      call error_mesg('hs_forcing','size(rdt,4) not equal to num_tracers', FATAL)
+    endif
 
 !-----------------------------------------------------------------------
-
- end subroutine hs_forcing
+  end subroutine hs_forcing
 
 !#######################################################################
-
- subroutine hs_forcing_init ( axes, Time, lonb, latb )
-
+  subroutine hs_forcing_init ( axes, Time, lonb, latb )
 !-----------------------------------------------------------------------
 !
 !           routine for initializing the model with an
@@ -410,25 +400,21 @@ contains
 !   benchmark calculation.
 !
 !-----------------------------------------------------------------------
-
-type(time_type), intent(in)         :: Time
-real, intent(in),  dimension(:,:)   :: lat, ps
-real, intent(in),  dimension(:,:,:) :: p_full, t, p_half
-real, intent(out), dimension(:,:,:) :: tdt, teq
-real, intent(in),  dimension(:,:,:), optional :: mask
-
+  type(time_type), intent(in)         :: Time
+  real, intent(in),  dimension(:,:)   :: lat, ps
+  real, intent(in),  dimension(:,:,:) :: p_full, t, p_half
+  real, intent(out), dimension(:,:,:) :: tdt, teq
+  real, intent(in),  dimension(:,:,:), optional :: mask
 !-----------------------------------------------------------------------
-
-          real, dimension(size(t,1),size(t,2)) :: &
+  real, dimension(size(t,1),size(t,2)) :: &
      sin_lat, sin_lat_2, cos_lat_2, t_star, cos_lat_4, &
      tstr, sigma, the, tfactr, rps, p_norm
 
-       real, dimension(size(t,1),size(t,2),size(t,3)) :: tdamp
-       real, dimension(size(t,2),size(t,3)) :: tz
+  real, dimension(size(t,1),size(t,2),size(t,3)) :: tdamp
+  real, dimension(size(t,2),size(t,3)) :: tz
 
-       integer :: k, i, j
-       real    :: tcoeff, pref
-
+  integer :: k, i, j
+  real    :: tcoeff, pref
 !-----------------------------------------------------------------------
 !------------latitudinal constants--------------------------------------
 
@@ -469,14 +455,13 @@ real, intent(in),  dimension(:,:,:), optional :: mask
       endif
 
 !  ----- compute damping -----
-      sigma(:,:) = p_full(:,:,k)*rps(:,:)
-      where (sigma(:,:) <= 1.0 .and. sigma(:,:) > sigma_b)
-        tfactr(:,:) = tcoeff*(sigma(:,:)-sigma_b)
-        tdamp(:,:,k) = tka + cos_lat_4(:,:)*tfactr(:,:)
-      elsewhere
-        tdamp(:,:,k) = tka
-      endwhere
-
+       sigma(:,:) = p_full(:,:,k)*rps(:,:)
+       where (sigma(:,:) <= 1.0 .and. sigma(:,:) > sigma_b)
+         tfactr(:,:) = tcoeff*(sigma(:,:)-sigma_b)
+         tdamp(:,:,k) = tka + cos_lat_4(:,:)*tfactr(:,:)
+       elsewhere
+         tdamp(:,:,k) = tka
+       endwhere
       enddo
 
       do k=1,size(t,3)
@@ -501,60 +486,53 @@ real, intent(in),  dimension(:,:,:), optional :: mask
 !           rayleigh damping of wind components near surface
 !
 !-----------------------------------------------------------------------
-
-type(time_type), intent(in)         :: Time
-real, intent(in),  dimension(:,:)   :: ps
-real, intent(in),  dimension(:,:,:) :: p_full, p_half, u, v
-real, intent(out), dimension(:,:,:) :: udt, vdt
-real, intent(in),  dimension(:,:,:), optional :: mask
-
+  type(time_type), intent(in)         :: Time
+  real, intent(in),  dimension(:,:)   :: ps
+  real, intent(in),  dimension(:,:,:) :: p_full, p_half, u, v
+  real, intent(out), dimension(:,:,:) :: udt, vdt
+  real, intent(in),  dimension(:,:,:), optional :: mask
 !-----------------------------------------------------------------------
+  real, dimension(size(u,1),size(u,2)) :: sigma, vfactr, rps
 
-real, dimension(size(u,1),size(u,2)) :: sigma, vfactr, rps
-
-integer :: i,j,k
-real    :: vcoeff
-real, dimension(size(u,2),size(u,3)) :: uz, vz
-real :: umean, vmean
-
+  integer :: i,j,k
+  real    :: vcoeff
+  real, dimension(size(u,2),size(u,3)) :: uz, vz
+  real :: umean, vmean
 !-----------------------------------------------------------------------
 !----------------compute damping----------------------------------------
 
-      if(relax_to_specified_wind) then
-        call get_zonal_mean_flow(Time, p_half, uz, vz)
-      endif
+  if(relax_to_specified_wind) then
+    call get_zonal_mean_flow(Time, p_half, uz, vz)
+  endif
 
-      vcoeff = -vkf/(1.0-sigma_b)
-      rps = 1./ps
+  vcoeff = -vkf/(1.0-sigma_b)
+  rps = 1./ps
 
-      do k = 1, size(u,3)
-      if (relax_to_specified_wind) then
-         do j=1, size(u,2)
-            umean=sum(u(:,j,k))/size(u,1)
-            vmean=sum(v(:,j,k))/size(v,1)
-            udt(:,j,k) = (uz(j,k)-umean)*vkf
-            vdt(:,j,k) = (vz(j,k)-vmean)*vkf
-         enddo
-      else
-
-         sigma(:,:) = p_full(:,:,k)*rps(:,:)
-
-         where (sigma(:,:) <= 1.0 .and. sigma(:,:) > sigma_b)
-            vfactr(:,:) = vcoeff*(sigma(:,:)-sigma_b)
-            udt(:,:,k)  = vfactr(:,:)*u(:,:,k)
-            vdt(:,:,k)  = vfactr(:,:)*v(:,:,k)
-         elsewhere
-            udt(:,:,k) = 0.0
-            vdt(:,:,k) = 0.0
-         endwhere
-
-      endif
+  do k = 1, size(u,3)
+    if (relax_to_specified_wind) then
+      do j=1, size(u,2)
+        umean=sum(u(:,j,k))/size(u,1)
+        vmean=sum(v(:,j,k))/size(v,1)
+        udt(:,j,k) = (uz(j,k)-umean)*vkf
+        vdt(:,j,k) = (vz(j,k)-vmean)*vkf
       enddo
+    else
+      sigma(:,:) = p_full(:,:,k)*rps(:,:)
+      where (sigma(:,:) <= 1.0 .and. sigma(:,:) > sigma_b)
+         vfactr(:,:) = vcoeff*(sigma(:,:)-sigma_b)
+         udt(:,:,k)  = vfactr(:,:)*u(:,:,k)
+         vdt(:,:,k)  = vfactr(:,:)*v(:,:,k)
+      elsewhere
+         udt(:,:,k) = 0.0
+         vdt(:,:,k) = 0.0
+      endwhere
+    endif
+  enddo
 
-      if (present(mask)) then
-          udt = udt * mask
-          vdt = vdt * mask
-      endif
+  if (present(mask)) then
+      udt = udt * mask
+      vdt = vdt * mask
+  endif
 
 !-----------------------------------------------------------------------
 

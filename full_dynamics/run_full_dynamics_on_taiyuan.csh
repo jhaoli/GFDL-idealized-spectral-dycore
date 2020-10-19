@@ -2,7 +2,7 @@
 #Minimal runscript
 set echo 
 #--------------------------------------------------------------------------------------------------------
-set experiment = mountain_wave
+set experiment = HSt42
 # The available experiments are:
 # HSt42
 # t42_polvani_2004
@@ -13,7 +13,7 @@ set experiment = mountain_wave
 #--------------------------------------------------------------------------------------------------------
 # define variables
 set platform  = taiyuan.intel                            # A unique identifier for your platform
-set npes = 8                                                # Number of processors
+set npes = 32                                                # Number of processors
 set num_executions = 1                                      # Number of times the model is run. Each run restarts from previous run.
 set time_stamp = $cwd/../bin/time_stamp.csh                 # Path to timestamp.csh
 set model_executable = $cwd/exec.$platform/full_dynamics.x  # Path to model executable
