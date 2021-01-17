@@ -2,6 +2,7 @@
 #Minimal runscript
 set echo 
 #--------------------------------------------------------------------------------------------------------
+#set experiment = rossby_haurwitz_wave
 set experiment = HSt42
 # The available experiments are:
 # HSt42
@@ -13,7 +14,7 @@ set experiment = HSt42
 #--------------------------------------------------------------------------------------------------------
 # define variables
 set platform  = taiyuan.intel                            # A unique identifier for your platform
-set npes = 32                                                # Number of processors
+set npes = 16                                                # Number of processors
 set num_executions = 1                                      # Number of times the model is run. Each run restarts from previous run.
 set time_stamp = $cwd/../bin/time_stamp.csh                 # Path to timestamp.csh
 set model_executable = $cwd/exec.$platform/full_dynamics.x  # Path to model executable
@@ -46,7 +47,7 @@ else
   mkdir -p $workdir
 endif
 cd $workdir
-mkdir INPUT RESTART
+mkdir RESTART
 #--------------------------------------------------------------------------------------------------------
 # get input data and executable
 cp $namelist   input.nml

@@ -8,6 +8,9 @@ atmos_spectral_shallow/shallow_dynamics.F90
 atmos_spectral_shallow/shallow_dynamics_type.F90
 atmos_spectral_shallow/shallow_physics.F90
 atmos_spectral_shallow/init/williamson92_test_cases.F90
+atmos_spectral_shallow/init/cross_polar_flow_test_case.F90
+atmos_spectral_shallow/init/jet_zonal_flow_test_case.F90
+atmos_spectral_shallow/init/quadpack.f90
 atmos_spectral/tools/gauss_and_legendre.F90
 atmos_spectral/tools/grid_fourier.F90
 atmos_spectral/tools/spec_mpp.F90

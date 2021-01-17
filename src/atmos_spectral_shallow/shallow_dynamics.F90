@@ -40,6 +40,8 @@ module shallow_dynamics_mod
   use shallow_dynamics_type_mod, only: dynamics_type, grid_type, spectral_type, tendency_type
   
   use williamson92_test_cases_mod, only : steady_geostrophic_flow, mountain_zonal_flow, rossby_haurwitz_wave
+  use cross_polar_flow_test_case_mod, only : cross_polar_flow
+  use jet_zonal_flow_test_case_mod, only : jet_zonal_flow
 
   implicit none
 
@@ -229,6 +231,10 @@ contains
         call mountain_zonal_flow    (Dyn, cos_lat, sin_lat, is, ie, js, je)
       case ('rossby_haurwitz_wave')
         call rossby_haurwitz_wave   (Dyn, cos_lat, sin_lat, is, ie, js, je)
+      case ('cross_polar_flow')
+        call cross_polar_flow       (Dyn, cos_lat, sin_lat, is, ie, js, je)
+      case ('jet_zonal_flow')
+        call jet_zonal_flow         (Dyn, cos_lat, sin_lat, is, ie, js, je)
       case default
         call error_mesg('shallow_dynamics','Unkown test case' // trim(test_case) // '!', FATAL)
       end select
