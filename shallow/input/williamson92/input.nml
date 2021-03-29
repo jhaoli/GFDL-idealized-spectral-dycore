@@ -13,25 +13,26 @@
 /
 
  &main_nml
-   days     = 10,
-   dt_atmos = 60
+   days     = 20,
+   dt_atmos = 90
 /
 
  &shallow_dynamics_nml
 !   test_case           = 'steady_geostrophic_flow'
-!   test_case           = 'mountain_zonal_flow'
-   test_case           = 'rossby_haurwitz_wave'
-   num_lon             = 128,
-   num_lat             = 64,
-   num_fourier         = 42,
-   num_spherical       = 43,
+   test_case           = 'mountain_zonal_flow'
+!   test_case           = 'rossby_haurwitz_wave'
+   num_lon             = 1536,
+   num_lat             = 768,
+   num_fourier         = 511,
+   num_spherical       = 512,
    fourier_inc         = 1,
    damping_option      = 'resolution_dependent',
-   damping_order       = 4,
+   damping_order       = 2,
 !   damping_coeff       = 1.15741e-9,
-   damping_coeff       = 0.0
+   damping_coeff       = 8.0E12
    grid_tracer         = .false.,
    spec_tracer         = .false.,
+!   alpha_implicit      = 0.5
    robert_coeff        = 0.04,
    robert_coeff_tracer = 0.04,
 /
